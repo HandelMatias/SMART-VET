@@ -71,8 +71,51 @@ const detallePaciente = async(req,res)=>{
 }
 
 
+const eliminarPaciente = async (req,res)=>{
+
+    try {
+        const {id} = req.params
+        const {salidaMascota} = req.body
+        if (Object.values(req.body).includes("")) return res.status(400).json({msg:"Debes llenar todos los campos"})
+        if( !mongoose.Types.ObjectId.isValid(id) ) return res.status(404).json({msg:`No existe el paciente ${id}`})
+        await Paciente.findByIdAndUpdate(id,{salidaMascota:Date.parse(salidaMascota),estadoMascota:false})
+        res.status(200).json({msg:"Fecha de salida registrado exitosamente"})
+
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ msg: `❌ Error en el servidor - ${error}` })
+    }
+}
+
+
+
+const actualizarPaciente = async(req,res)=>{
+    const {id} = req.params
+    if (Object.values(req.body).includes("")) return res.status(400).json({msg:"Lo sentimos, debes llenar todos los campos"})
+    if( !mongoose.Types.ObjectId.isValid(id) ) return res.status(404).json({msg:`Lo sentimos, no existe el veterinario ${id}`})
+    if (req.files?.imagen) {
+        const paciente = await Paciente.findById(id)
+        if (paciente.avatarMascotaID) {
+            await cloudinary.uploader.destroy(paciente.avatarMascotaID);
+        }
+        const cloudiResponse = await cloudinary.uploader.upload(req.files.imagen.tempFilePath, { folder: 'Pacientes' });
+        req.body.avatarMascota = cloudiResponse.secure_url;
+        req.body.avatarMascotaID = cloudiResponse.public_id;
+        await fs.unlink(req.files.imagen.tempFilePath);
+    }
+    await Paciente.findByIdAndUpdate(id, req.body, { new: true })
+    res.status(200).json({msg:"Actualización exitosa del paciente"})
+}
+
+
+
+
+
+
 export{
     registrarPaciente,
     listarPacientes,
-    detallePaciente
+    detallePaciente,
+    eliminarPaciente,
+    actualizarPaciente
 }
