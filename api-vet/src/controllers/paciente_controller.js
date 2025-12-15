@@ -2,6 +2,8 @@ import { sendMailToOwner } from "../helpers/sendMail.js"
 import { subirBase64Cloudinary, subirImagenCloudinary } from "../helpers/uploadCloudinary.js"
 import Paciente from "../models/Paciente.js"
 import mongoose from "mongoose"
+import { v2 as cloudinary } from "cloudinary"
+import fs from 'fs-extra'
 
 const registrarPaciente = async(req,res)=>{
 
